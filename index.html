@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Covid 19 Map</title>
+</head>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial;
+    }
+
+    .map-wrapper {
+        position: relative;
+    }
+
+    .map {
+        width: 100vw;
+        height: 100vh;
+    }
+
+    .map-history {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 1000px;
+        height: 800px;
+        z-index: 10000;
+        background: #fff;
+        display: none;
+        padding: 20px;
+        border-radius: 20px;
+
+    }
+</style>
+
+<body>
+    <div class="map-wrapper">
+        <div id="map" class="map"></div>
+        <div class="map-history">
+            <div class="map-data">
+                <h3 class="country-title"></h3>
+                <p class="data-confirmed"></p>
+                <p class="data-deaths"></p>
+                <p class="data-recovered"></p>
+            </div>
+            <div class="map-confirmed">
+
+                <canvas id="chart" width="800" height="400"></canvas>
+            </div>
+            <div class="map-deaths">
+
+            </div>
+        </div>
+    </div>
+</body>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDhfsMQwebj229O6yWHl1So3NbD0p3AbMw"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+<script type="module" src="scripts.js">
+
+
+</script>
+
+</html>
