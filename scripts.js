@@ -1,69 +1,73 @@
-const API_URL = 'https://wuhan-coronavirus-api.laeyoung.endpoint.ainize.ai/jhu-edu/latest'
-const $map = document.getElementById('map')
-const $history = document.querySelector('.map-history')
-const $title = document.querySelector('.country-title')
-const $confirmed = document.querySelector('.data-confirmed')
-const $deaths = document.querySelector('.data-deaths')
-const $recovered = document.querySelector('.data-recovered')
-
 import mapStyle from './map-style.js'
 import chartStyle from './chart-style.js'
+
+const API_URL = 'https://wuhan-coronavirus-api.laeyoung.endpoint.ainize.ai/jhu-edu/latest'
+const $map = document.getElementById('map')
+const $modal = document.getElementById("myModal")
+const $span = document.querySelector(".close")
+
 const getData = async (API_URL) => {
     const response = await fetch(API_URL)
     const data = await response.json()
     return data
 }
-const renderExtraData = async ({ countryregion, confirmed, deaths, recovered }) => {
-    $history.style.display = 'block'
-    $title.innerHTML = countryregion
-    $confirmed.innerHTML = confirmed
-    $deaths.innerHTML = deaths
-    $recovered.innerHTML = recovered
-    await renderChart(countryregion)
+const showModal = () => {
+    $modal.style.display = 'block'
 }
-
-const totalCaseChart = async (ctx, country) => {
-
-    const confirmed_url = `https://api.covid19api.com/dayone/country/${country.replace(' ', '-').toLowerCase()}/status/confirmed`
-    const recovered_url = `https://api.covid19api.com/dayone/country/${country.replace(' ', '-').toLowerCase()}/status/recovered`
-    const deaths_url = `https://api.covid19api.com/dayone/country/${country.replace(' ', '-').toLowerCase()}/status/deaths`
+window.onclick = (event) => {
+    if(event.target == $modal){
+        $modal.style.display = "none"
+    }
+}
+$span.onclick = () => {
+    $modal.style.display = "none"
+}
+const renderExtraData = async (item) => {
+    showModal()
+    await renderChart(item)
+}
+const totalCaseChart = async (ctx, item) => {
+    const { countryregion, confirmed, deaths, recovered } = item
+    const confirmed_url = `https://api.covid19api.com/dayone/country/${countryregion.replace(' ', '-').toLowerCase()}/status/confirmed`
+    const recovered_url = `https://api.covid19api.com/dayone/country/${countryregion.replace(' ', '-').toLowerCase()}/status/recovered`
+    const deaths_url = `https://api.covid19api.com/dayone/country/${countryregion.replace(' ', '-').toLowerCase()}/status/deaths`
 
     const data_confirmed = await getData(confirmed_url)
     const data_recovered = await getData(recovered_url)
     const data_deaths = await getData(deaths_url)
-
-    const chart = new Chart(ctx, {
+    let options = {
         type: 'line',
         data: {
-            labels: data_confirmed.map((item) => item.Date),
+            labels: data_confirmed.map(item => new Intl.DateTimeFormat('es-PE', { month: 'long', day: 'numeric' }).format(new Date(item.Date))),
             datasets: [
                 {
-                    label: 'Deaths',
-                    borderColor: 'red',
-                    data: data_deaths.map((item) => item.Cases)
+                    label: `Confirmed ${confirmed}`,
+                    orderColor: 'orange',
+                    data: data_confirmed.map((item) => item.Cases),
                 },
                 {
-                    label: 'Recovereds',
+                    label: `Recovered ${recovered}`,
                     borderColor: 'green',
                     data: data_recovered.map((item) => item.Cases)
                 },
                 {
-                    label: 'Confirmed',
-                    orderColor: 'orange',
-                    data: data_confirmed.map((item) => item.Cases),
-                }
+                    label: `Deaths ${deaths}`,
+                    borderColor: 'red',
+                    data: data_deaths.map((item) => item.Cases)
+                },
             ]
         },
-        options:chartStyle
-    })
+        options: chartStyle
+    }
+    let chart = new Chart(ctx, options)
 }
-const renderChart = async (country) => {
-
-    const ctx = document.getElementById('chart').getContext('2d')
-    totalCaseChart(ctx, country)
+const renderChart = async (item) => {
+    const ctx = document.getElementById('chart').getContext('2d')   
+    totalCaseChart(ctx, item)
 }
 const renderData = async () => {
     const data = await getData(API_URL)
+    const icon = './icon.png'
     data.forEach(item => {
         const marker = new window.google.maps.Marker({
             position: {
@@ -71,7 +75,8 @@ const renderData = async () => {
                 lng: item.location.lng
             },
             map,
-            title: String(item.confirmed),
+            icon,
+            title: String(item.countryregion),
         })
         marker.addListener('click', () => {
             renderExtraData(item)
