@@ -5,29 +5,21 @@ const API_URL = 'https://wuhan-coronavirus-api.laeyoung.endpoint.ainize.ai/jhu-e
 const $map = document.getElementById('map')
 const $modal = document.getElementById("myModal")
 const $span = document.querySelector(".close")
+const $title = document.querySelector('.country-name')
 
 const getData = async (API_URL) => {
     const response = await fetch(API_URL)
     const data = await response.json()
     return data
 }
-const showModal = () => {
+const renderDetailCountry = async (item) => {
     $modal.style.display = 'block'
-}
-window.onclick = (event) => {
-    if(event.target == $modal){
-        $modal.style.display = "none"
-    }
-}
-$span.onclick = () => {
-    $modal.style.display = "none"
-}
-const renderExtraData = async (item) => {
-    showModal()
-    await renderChart(item)
-}
-const totalCaseChart = async (ctx, item) => {
+    
+    const ctx = document.getElementById('chart').getContext('2d')   
     const { countryregion, confirmed, deaths, recovered } = item
+
+    $title.innerHTML = countryregion
+
     const confirmed_url = `https://api.covid19api.com/dayone/country/${countryregion.replace(' ', '-').toLowerCase()}/status/confirmed`
     const recovered_url = `https://api.covid19api.com/dayone/country/${countryregion.replace(' ', '-').toLowerCase()}/status/recovered`
     const deaths_url = `https://api.covid19api.com/dayone/country/${countryregion.replace(' ', '-').toLowerCase()}/status/deaths`
@@ -61,11 +53,7 @@ const totalCaseChart = async (ctx, item) => {
     }
     let chart = new Chart(ctx, options)
 }
-const renderChart = async (item) => {
-    const ctx = document.getElementById('chart').getContext('2d')   
-    totalCaseChart(ctx, item)
-}
-const renderData = async () => {
+const renderDataMap = async () => {
     const data = await getData(API_URL)
     const icon = './icon.png'
     data.forEach(item => {
@@ -79,7 +67,7 @@ const renderData = async () => {
             title: String(item.countryregion),
         })
         marker.addListener('click', () => {
-            renderExtraData(item)
+            renderDetailCountry(item)
         })
     })
 }
@@ -91,4 +79,12 @@ const map = new window.google.maps.Map($map, {
     zoom: 3,
     styles: mapStyle,
 })
-renderData()
+window.onclick = (event) => {
+    if(event.target == $modal){
+        $modal.style.display = "none"
+    }
+}
+$span.onclick = () => {
+    $modal.style.display = "none"
+}
+renderDataMap()
